@@ -1,0 +1,39 @@
+
+
+<h1>Listar</h1>
+
+<form>
+Procurar por: 
+<input type="text" name="key" size="15">
+<input type="submit" value=" Procurar " >
+</form>
+
+[% IF key %]
+<br/>
+<b>Procurando por [% key %]</b>
+<br/>
+[% END %]
+
+<Table><tr><td>
+<b>Nome</b>
+</td><td>
+<b>Telefone</td>
+</td><td>
+<b>A&ccedil;&atilde;o
+</td></tr>
+
+[% WHILE (item = items.next) %]
+	<tr><td>
+	[% item.nome %]
+	</td><td>
+	[% item.telefone %]
+	</td><td>
+	<a href="[% c.uri_for('edit', item.id) %]">Editar</a>
+	-
+	<a href="[% c.uri_for('destroy', item.id) %]">Remover</a>
+	</td></tr>
+[% END %]
+
+</table>
+
+

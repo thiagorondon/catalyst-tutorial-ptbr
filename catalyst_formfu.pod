@@ -1,0 +1,109 @@
+
+=pod
+
+=head1 NOME
+
+Catalyst e FormFu - Criando formularios rapidamente com Catalyst.
+
+=head1 DESCRICAO
+
+Este e um pequeno tutorial de como utilizar o HTML::FormFu para gerenciar seus forms junto com o Catalyst.
+
+HTML::FormFu e otimo para ser utilizado em casos onde o desenvolvimento precisa ser rapido, principalmente para casos pequenos, ele gerencia teus formularios, assim como valida todas as entradas postadas nele de forma trivial.
+
+
+=head1 INICIO
+
+=head2 Instalação do FormFu.
+
+Para instalar o HTML::FormFu para trabalhar com o Catalyst, iremos utilizar o controller criado para esta funcao chamado Catalyst::Controler::HTML::FormFu, via cpan basta:
+
+	$ PERL_MM_USE_DEFAULT=1 
+	$ cpan Catalyst::Component::InstancePerContext Catalyst::Controller::HTML::FormFu
+
+O C:C:HTML::FormFu tem algumas dependencias, e por isto, além do pacote
+o "cpan" irá automaticamente instalar as suas dependencias.
+
+DICA: Sete a variavel de ambiente PERL_MM_USE_DEFAULT=1 para o cpan não lhe questionar sobre as dependencias e demais perguntas, e instalar elas sem lhe perguntar.
+
+Pronto, a instalação esta concluida, agora estamos com o sistema apto para programar utilizando o HTML::FormFu com o Catalyst.
+
+=head2 Iniciando
+
+Primeira alteracao que voce deve efetuar no teu controller, e carregar o controller do HTML::FormFu no lugar do default, ou seja, onde estiver:
+
+	use parent 'Catalyst::Controller';
+
+troque para:
+
+	use parent 'Catalyst::Controller::HTML::FormFu';
+
+Feito isto, precisamos adicionar o action para mostrar e salvar as informacoes deste form, por exemplo:
+
+	# MyApp::Controller::foo;
+	
+	sub create :Chained('base') Args(0) FormConfig {
+		my ($self, $c) = @_;
+
+		# Buscando o form de :FormConfig do stash.
+		my $form = $c->stash->{form};
+
+		# Verificando se os dados foram submetidos no formularios e
+		# se foi feita a validacao.
+		# E o mesmo que: "$form->submitted && !$form->has_errors"
+		if ($form->submitted_and_valid) {
+			my $item = $c->model('DB::table')->new_result({});
+			$form->model->update($item);
+			$c->stash->{msg} = 'OK';
+		} 
+
+	}
+
+
+=head2 Criando o arquivo de configuracao do Form
+
+Primeiramente iremos criar o diretorio onde estara localizado o arquivo de configuracao default, no qual o HTML::FormFu ira procurar:
+
+	mkdir -p root/forms/foo
+
+Crie o arquivo:
+
+	elements:
+		-type: Text
+		name: nome
+		label: Nome Completo
+		attributes:
+			title: Coloque o nome completo
+
+		-type: Submit
+		name: submit
+		value: Cadastrar
+
+
+=head2 Incluindo form na TT.
+
+Agora, basta adicionar no teu create.tt o form gerado pelo FormFu.
+
+	<h1> Criar </h1>
+	<hr>
+	[% form %]
+	<hr>
+
+Pronto, teu formulario sera montando automaticamente.
+
+=head2 Como criar o 'editar' com o FormFu ?
+
+....
+
+=head1 AUTOR
+
+Thiago Rondon <thiago@aware.com.br>
+
+=head1 COLABORADORES
+
+SaoPaulo-pm mailing list
+
+http://mail.pm.org/mailman/listinfo/saopaulo-pm
+
+=cut
+

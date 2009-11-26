@@ -1,0 +1,531 @@
+
+=pod
+
+=head1 NOME
+
+Catalyst - O Elegante framework de programação Web em Perl.
+
+=head1 DESCRICAO
+
+Catalyst é um framework elegante de programação MVC para Web em Perl
+(ambos gratuitos e de código aberto). Este tutorial
+simples e talvez muito objetivo tem como missão facilitar o entedimento
+para os novos nesta ferramenta de forma pratica, não
+se prendendo muito a conceitos, motivos e paradigmas.
+
+=head1 INICIO
+
+=head2 Instalação do Catalyst.
+
+O Perl tem o CPAN, no qual é um repositorio farto de modulos e
+documentação, você pode utilizar o site http://search.cpan.org/ para
+navegar por ele, e toda distribuição do Perl vem com um aplicativo
+chamado "cpan" para você poder instalar os modulos atravez da
+linha de comando.
+
+	$ export PERL_MM_USE_DEFAULT=1
+	$ cpan -i Task::Catalyst
+
+O Catalyst tem algumas dependencias, e por isto, além do pacote do
+Catalyst o "cpan" irá automaticamente instalar as suas dependencias,
+perceba que estamos utilizando o pacote Task::Catalyst, no qual contém
+uma serie de pacotes recomendadas para a utilização do
+Catalyst.
+
+DICA: Sete a variavel de ambiente PERL_MM_USE_DEFAULT=1 para o cpan não
+lhe questionar sobre as dependencias e demais perguntas,
+e instalar elas sem lhe perguntar.
+
+Pronto, a instalação esta concluida, agora estamos com o sistema apto
+para programar utilizando o framework de programação Catalyst.
+
+=head2 Iniciando o meu primeiro projeto.
+
+No pacote do Catalyst, vem acompanhando um aplicativo que facilita a
+nossa vida para montar o ambiente básico para iniciarmos o nosso
+projeto, chamado de "catalyst.pl", para isto basta executar ele com o
+primeiro argumento sendo o nome do projeto.
+
+   $ catalyst.pl webapp
+   created "webapp"
+   created "webapp/script"
+   created "webapp/lib"
+   created "webapp/root"
+   created "webapp/root/static"
+   created "webapp/root/static/images"
+   created "webapp/t"
+   created "webapp/lib/webapp"
+   created "webapp/lib/webapp/Model"
+   created "webapp/lib/webapp/View"
+   created "webapp/lib/webapp/Controller"
+   created "webapp/webapp.conf"
+   created "webapp/lib/webapp.pm"
+   created "webapp/lib/webapp/Controller/Root.pm"
+   created "webapp/README"
+   created "webapp/Changes"
+   created "webapp/t/01app.t"
+   created "webapp/t/02pod.t"
+   created "webapp/t/03podcoverage.t"
+   created "webapp/root/static/images/catalyst_logo.png"
+   created "webapp/root/static/images/btn_120x50_built.png"
+   created "webapp/root/static/images/btn_120x50_built_shadow.png"
+   created "webapp/root/static/images/btn_120x50_powered.png"
+   created "webapp/root/static/images/btn_120x50_powered_shadow.png"
+   created "webapp/root/static/images/btn_88x31_built.png"
+   created "webapp/root/static/images/btn_88x31_built_shadow.png"
+   created "webapp/root/static/images/btn_88x31_powered.png"
+   created "webapp/root/static/images/btn_88x31_powered_shadow.png"
+   created "webapp/root/favicon.ico"
+   created "webapp/Makefile.PL"
+   created "webapp/script/webapp_cgi.pl"
+   created "webapp/script/webapp_fastcgi.pl"
+   created "webapp/script/webapp_server.pl"
+   created "webapp/script/webapp_test.pl"
+   created "webapp/script/webapp_create.pl"
+
+Pronto, agora estamos com nosso ambiente básico para começar a
+programar, vou explicar de forma rápida a estrutura
+de diretorios criada para você entender melhor:
+
+   $ ls webapp/
+   Changes  lib/  Makefile.PL  README  root/  script/  t/  webapp.conf
+
+Veja, que temos quatro diretorios, que são eles:
+
+=over
+
+=item lib/
+
+Contém a parte da programação lógica, onde iremos escrever nossos
+modulos e códigos em Perl.
+
+=item root/
+
+Neste diretorio iremos colocar arquivos estáticos, como templates,
+javascript e css.
+
+=item script/
+
+Scripts para inicializar a nossa aplicação.
+
+=item t/
+
+Testes para nossa aplicação.
+
+=back
+
+Vamos falar um pouco do diretorio "script/", nele você tem um script
+que usaremos muito neste tutorial, webapp_server.pl, no
+qual irá iniciar um servidor http na porta 3000 por padrão, para
+visualizarmos o nosso aplicativo:
+
+	$ script/webapp_server.pl
+
+Depois de executar ele, você já pode acessar o aplicativo pelo seu
+browser favorito, pelo endereço:
+
+	http://localhost:3000
+   
+=head2 Entendendo um MVC (Model-View-Controller)
+
+MVC é um padrão de arquitetura de software, uma das maiores
+dificuldades do entendimento de um framework de programação
+web como o Catalyst para os iniciantes é justamente este conceito.
+Basicamente o significado deles é:
+
+=over
+
+=item Model:
+
+São as informações utilizadas pelo aplicativo, no qual este modelo pode
+ser um banco de dados, um arquivo texto e etc.
+
+=item Controller:
+
+Lógica do nosso aplicativo, onde podemos por exemplo alterar as
+informações (Model), filtrar e etc.
+
+=item View:
+
+Renderizar o Model e o Controller para o usuário, ou seja como o
+aplicativo será apresentado.
+
+=back
+
+Esta é uma forma rápida de apresentar os três componentes do MVC,
+sabendo disto, vamos começar a produzir nosso aplicativo.
+
+=head2 Nosso projeto: Agenda telefonica
+
+Vamos começar a estudar o nosso aplicativo, ele irá gerenciar uma lista
+de telefones, no qual iremos efetuar um simples "CRUD"
+
+CRUD: Create-Remove-Update-Destroy, no qual iremos permitir efetuar a
+criação, remover, atualizar e apagar dados de nossa lista.
+
+Vamos projetar nossa agenda telefonica, utilizando o MVC da seguinte da
+forma:
+
+=over
+
+=item Model: 
+
+Iremos utilizar o MySQL, porém para efetuar a conectividade com
+o banco de dados, iremos utilizar um driver do DBI, no
+qual o MySQL e tantos outros ele suporta, e é interessante além de
+utilizar o driver de comunicação com o banco de dados, algum
+ORM (http://en.wikipedia.org/wiki/Object-relational_mapping) para
+facilitar a interface com o DB, existem alguns disponiveis como
+por exemplo o Class::DBI ou DBIx::Class para evitar que você escreva
+SQL no teu código, evitar alguns bugs e trazer agilidade no
+desenvolvimento, no nosso caso iremos utilizar o DBIx::Class.
+View: Iremos utilizar o HTML como formato de apresentação para nossos
+usuarios, portanto teremos que carregar o modulo que
+cuidará de manipular os dados que iremos jogar em nosso arquivo de
+template, existem alguns modulos disponiveis como o
+HTML::Manson ou Template::Toolkit), iremos utilizar neste caso o
+Template::Toolkit.
+
+=item Controller: 
+
+Aqui é o lugar onde iremos programar, captar os dados no
+Model e "espirrar" para a View, entre outras.
+
+=back
+
+=head2 Começando pelo Model.
+
+Bem, já dissemos que iremos utilizar o MySQL como banco de dados, e
+também já explicamos por que iremos utilizar o DBIx::Class.
+
+Precisamos instalar ele:
+
+	$ cpan -i DBIx::Class
+	$ cpan -i DBIx::Class::Schema::Loader
+
+Iremos instalar tambem o pacote DBIx::Class::Schema::Loader, para 
+carregar o database criado para o esquema do DBIx::Class.
+
+Certo, agora temos tudo o que precisamos para trabalhar com o nosso
+Model. Neste tutorial eu vou utilizar o exemplo de criar a
+tabela direto pelo client do MySQL, e depois ler elas pelo DBIx::Class.
+
+	mysql> create database webapp;
+   	mysql> grant all on webapp.* to webapp@localhost identified by
+   	'webapp';
+   	mysql> flush privileges;
+   	mysql> use webapp;
+	mysql> create table telefones (
+   	id int not null auto_increment,
+   	nome varchar(255),
+   	telefone varchar(255),
+   	primary key(id));
+
+Criado a nosso database e nossa tabela, agora vamos para "importar"
+nosso banco de dados para o DBIx::Class, eu não irei me
+aprofundar no DBIx::Class neste tutorial, pois não é o objetivo dele.
+Para importarmos este database para os schemas que o DBIx::Class
+utiliza, iremos executar um dos scripts facilitadores do diretorio
+scripts/ que se chama "webapp_create.pl" no qual facilita algumas
+tarefas como esta, a sintaxe utilizada é auto-explicativa, é
+basicamente:
+
+	# script/webapp_create.pl model DB DBIC::Schema webapp::Schema \
+	create=static dbi:mysql:dbname=webapp webapp webapp
+
+	exists "/home/thiago/webapp/script/../lib/webapp/Model"
+	exists "/home/thiago/webapp/script/../t"
+	Dumping manual schema for webapp::Schema to directory
+	/home/thiago/webapp/script/../lib ...
+	Schema dump completed.
+	created "/home/thiago/webapp/script/../lib/webapp/Model/DB.pm"
+	created "/home/thiago/webapp/script/../t/model_DB.t"
+
+Vejamos os argumentos deste script:
+
+=over
+
+=item model
+
+Estamos criando um model para o script webapp_create.pl
+
+=item DB
+
+O nome criado para este modem será DB (vide lib/webapp/Model/DB.pm)
+
+=item DBIC::Schema
+
+Nome do helper para criar o Schema para o DBIx::Class
+
+=item create=static
+
+Significa que o schema será estatico, ou seja, a
+toda alteração nas tabelas, você precisa atualizar nos arquivos criados
+para o schema.
+
+=item dbname
+
+Nome do database no MySQL.
+
+=item webapp
+
+Usuario para se conectar no banco.
+
+=item webapp
+
+Senha para se conectar no banco.
+
+=back
+
+Agora, de uma lida nos arquivos criados em lib/webapp/Schema/* e
+lib/webapp/Model/*
+
+Pronto, já temos o nosso Model pronto para o nosso aplicativo.
+
+=head2 View - Template Toolkit.
+
+Iremos utilizar neste exemplo a Template::Toolkit, iremos utilizar um
+helper da mesma maneira que usamos para o banco de dados:
+
+	# script/webapp_create.pl view TT TT
+	exists "/home/thiago/webapp/script/../lib/webapp/View"
+	exists "/home/thiago/webapp/script/../t"
+	created "/home/thiago/webapp/script/../lib/webapp/View/TT.pm"
+	created "/home/thiago/webapp/script/../t/view_TT.t"
+
+Pronto, o helper já criou os arquivos necessarios para utilizarmos a
+Template Toolkit em nosso projeto.
+
+=head2 Controller - Agora sim, programando!
+
+Estamos na melhor parte, é onde tudo acontece, iremos criar 4 actions,
+para criar, remover, listar e editar.
+
+Eu irei colocar o código que utilizei, e com ele comentado explicando
+passo-a-passo do que estou fazendo nele. Não irei utilizar nenhum helper 
+ou facilitador nesta parte, pois acredito que a melhor maneira
+de se desenvolver o Controller é na 'unha'.
+
+Iremos criar um arquivo lib/webapp/Controller/telefone.pm, no qual ele
+irá representar na URI "/telefone".
+
+Caso queira baixar todos os arquivos, clique aqui.
+
+	package webapp::Controller::telefone;
+	use strict;
+	use warnings;
+	use parent 'Catalyst::Controller';
+
+	# Nos estamos utilizando um mecanismo muito interessante neste
+	# exemplo, que recomendo a utilizacao, o Chained.
+	# Não iremos entrar discutir sobre ele, porem ele ajuda
+	# manusearmos os argumentos passados pela URI.
+	# Por tanto, vamos criar uma rotina "base" no qual todas as
+	# requisições passaram por ela (Chained()).
+	# search.cpan.org/dist/Catalyst-Runtime/lib/Catalyst/DispatchType/Chained.pm
+
+	sub base :Chained('/') CaptureArgs(0) PathPart('telefone') {
+        	my ($self, $c) = @_;
+        	# stash é o local onde iremos colocar informações para compartilhar
+        	# com outras partes do nosso aplicativo, para cada requisição o stash
+        	# tem uma vida.
+        	# No caso, abaixo estamos atribuindo ao "collection" no stash o nosso
+        	# model "DB::telefones", que corresponde a nossa tabela telefones que
+        	# criamos no MySQL.
+                $c->stash->{collection} = $c->model('DB::telefones');
+}
+
+	# Veja, aqui estamos criando uma URI list/, no qual ela esta vinculada a nossa
+	# função base, criada anteriormente (Chained('base')),
+	#
+	# Ou seja, para chamar a URL, http://localhost:3000/telefone/list, primeiramente
+	# ele vai passar na base e depois na list. (* E por último, neste nosso exemplo
+	# na action end do Root.pm, no qual nem iremos comentar neste tutorial).
+	#
+	# Veja que estamos dizendo Args(0), isto significa que não preciso de nenhum
+	# elemento extra na minha URI, sempre que esta action for requisitada, será
+	# /telefone/list
+	#
+
+	sub list :Chained('base') Args(0) {
+        	my ($self, $c) = @_;
+		# "req" ou "request" são as informações que estão no request da
+		# requisição, e no qual temos o metodo param que retorna o valor
+		# do atributo que gostariamos.
+        	my $key = $c->req->param('key') || "";
+	        # Aham, aqui estamos utilizando o DBIx:Class, repare que não iremos
+        	# escrever nenhum um código de SQL aqui, veja abaixo que iremos
+        	# utilizar uma função search_like(), no qual iremos procurar pelo
+        	# elemento $key nos dois campos (nome, telefone), estou usando o
+        	# $key, caso o usuario queira procurar por alguma palavra chave.
+        	my $items = $c->stash->{collection}->search_like({
+        	nome => "\%$key\%",
+        	telefone => "\%$key\%"
+        	});
+        
+		# Aqui estou colocando no stash o key, para mostrar na View por qual
+        	# palavra o usuario esta procurando, e o items encontrados.
+        	$c->stash->{key} = $key;
+        	$c->stash->{items} = $items;
+	}
+
+	# Esta função é para remover uma determinada coluna do nosso banco de dados,
+	# repare que aqui estamos utilizando Args(1), ou seja estou esperando um
+	# elemento na minha URI, além de /telefones/destroy, eu só irei acessar esta
+	# URI, se acessar por /telefones/destroy/N, onde N é o ID do nosso item.
+	# Veja que no código da função, estaremos novamente usando uma função do DBIx:Class,
+	# primeiramente irei procurar por este elemento com find() e então irei remover
+	# ele.
+	sub destroy :Chained('base') :Args(1) {
+		my ($self, $c, $id) = @_;
+		my $row = $c->stash->{collection}->find({ id => $id });
+		$row->delete if $row;
+	}
+
+	# Aqui, iremos editar o nosso item, onde também esperamos um argumento, que é oid
+	# do item, e iremos procurar ele.
+	# Repare que aqui, eu faço uma verificação, onde quero saber se o metodo utilizado
+	# para chamar esta requisição é POST, caso não seja eu vou "encarrar" (detach())
+	# esta função e vou passar para a próxima função da cadeia. (end() no Root.pm, neste
+	# caso).
+	# Resumindo, se o usuário não apertou "ALTERAR" no html (no qual o form esta enviando
+	# os dados via POST), eu irei mostrar a página com os dados do objeto N ($id).
+
+	sub edit :Chained('base') :Args(1) {
+        	my ($self, $c, $id) = @_;
+	        my $row = $c->stash->{row} = $c->stash->{collection}->find({id => $id});
+		$c->stash->{template} = "telefone/create.tt";
+		$c->detach() unless $c->req->method eq 'POST';
+		# Caso o usuario, tenha apertado o submit do nosso form, para alterar osdados,
+		# eu vou colocar eles em $parameters = {}, e vou mandar o $row (que é o objeto
+        	# do find()) para o metodo update().
+        	my $parameters;
+        	$parameters->{nome} = $c->req->param('nome');
+        	$parameters->{telefone} = $c->req->param('telefone');
+        	$row->update($parameters);
+        	# Agora, nao vou mandar ele para a mesma tela, vou enviar para uma template diferente.
+		$c->stash->{template} = "telefone/edit_ok.tt";
+}
+	# Esta rotina é bem parecida com a do edit, com a unica diferença, que ao invezde atualizar
+	# eu vou inserir.
+
+	sub create :Chained('base') :Args(0) {
+        	my ($self, $c) = @_;
+		$c->detach() unless $c->req->method eq 'POST';
+		my $parameters;
+		$parameters->{nome} = $c->req->param('nome');
+		$parameters->{telefone} = $c->req->param('telefone');
+		my $row = $c->stash->{collection}->new($parameters);
+		$row->insert;
+		$c->stash->{template} = "telefone/create_ok.tt";
+	}
+
+	# Caso, eu não especifique nada na URI de telefones, ou seja, acessar
+	# http://localhost:3000/telefone eu irei redirecionar para a action list,
+	# que já comentamos sobre ela.
+
+	sub index :Path :Args(0) {
+        	my ($self, $c) = @_;
+                
+		$c->res->redirect(
+		       	$c->uri_for(
+        			$c->controller->action_for('list')
+        		)
+        	);
+	}
+	1;
+
+Código pronto, porem precisamos das templates.
+Agora, crie estes arquivos no diretorio root/telefone:
+Este arquivo, é para a action "create", no qual é o nosso formulario para criar
+um item na nossa agenda.
+
+=head3 create.tt 
+
+	<h1>Criar</h1>
+	<form method="POST">
+	<Table><tr><td>
+	Nome:
+	</td><td> <input type="text" name="nome" value="[% row.nome %]" size=20>
+	</td></tr><tr><td>
+	Telefone:
+	</td><td> <input type="text" name="telefone" value="[% row.telefone %]" size=20>
+	</td></tr><tr><td colspan="2">
+	<center><input type="submit"></center>
+	</td></tr></table>
+	</form>
+
+=head3 create_ok.tt 
+
+Este arquivo é a mensagem depois da criação do item.
+
+	<h1>Telefone inserido com sucesso!</h1>
+
+=head3 destroy.tt 
+
+Mensagem para o item apagado.
+
+	<h1>Telefone apagado</h1>
+
+=head3 edit_ok.tt
+
+Mensagem para item editado.
+
+	<h1>Editado com sucesso.</h1>
+
+=head3 list.tt
+
+Listar itens da nossa agenda, e também dar ao usuário a opção de procurar neles.
+
+	<h1>Listar</h1>
+	<form>
+	Procurar por:
+	<input type="text" name="key" size="15">
+	<input type="submit" value=" Procurar " >
+	</form>
+	[% IF key %]
+	<br/>
+	<b>Procurando por [% key %]</b>
+	<br/>
+	[% END %]
+
+	<Table><tr><td>
+	<b>Nome</b>
+	</td><td>
+	<b>Telefone</td>
+	</td><td>
+	<b>A&ccedil;&atilde;o
+	</td></tr>
+	[% WHILE (item = items.next) %]
+      	  <tr><td>
+        [% item.nome %]
+        </td><td>
+        [% item.telefone %]
+        </td><td>
+        <a href="[% c.uri_for('edit', item.id) %]">Editar</a>
+        -
+        <a href="[% c.uri_for('destroy', item.id) %]">Remover</a>
+        </td></tr>
+	[% END %]
+	</table>
+
+=head2 Testando a nossa aplicacao.
+
+Criamos as 4 actions, vamos acessar agora http://localhost:3000/telefone/create
+para criar o nosso primeiro telefone.
+
+Feito isto, vamos visualizar ele atravez de http://localhost:3000/telefone/list
+
+
+=head1 AUTOR
+
+Thiago Rondon <thiago@aware.com.br>
+
+=head1 COLABORADORES
+
+SaoPaulo-pm mailing list
+
+http://mail.pm.org/mailman/listinfo/saopaulo-pm
+
+=cut
+
